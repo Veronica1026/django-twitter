@@ -1,7 +1,6 @@
 *.box
 .vagrant
 Vagrantfile
-.idea
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -132,5 +131,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# .pycharm_helpers/ appeared after setting interpreter
-.pycharm_helpers/
+/.pycharm_helpers/
+.idea
