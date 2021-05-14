@@ -8,6 +8,10 @@ class Tweet(models.Model):
     content = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        index_together = (('user', 'created_at'),)
+        ordering = ('user', '-created_at')
+
     @property
     def hours_to_now(self):
         # datetime.now has no information regarding timezone. We need to convert to UTC
@@ -15,8 +19,6 @@ class Tweet(models.Model):
 
     def __str__(self):
         return f'{self.created_at} {self.user}: {self.content}'
-
-
 
 
 
