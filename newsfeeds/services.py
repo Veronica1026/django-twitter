@@ -19,6 +19,7 @@ class NewsFeedService(object):
             NewsFeed(user=follower, tweet=tweet)
             for follower in FriendshipService.get_followers(tweet.user)
         ]
+        # 发帖人自己也应该能看到自己发的帖子
         newsfeeds.append(NewsFeed(user=tweet.user, tweet=tweet))
         NewsFeed.objects.bulk_create(newsfeeds)
 
