@@ -6,6 +6,7 @@ from tweets.models import Tweet
 # be careful to add '/' in the end, otherwise there will be a 301 redirect
 TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
+TWEET_RETRIEVE_API = '/api/tweets/{}/'
 
 class TweetApiTests(TestCase):
 
@@ -67,3 +68,22 @@ class TweetApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['user']['id'], self.user1.id)
         self.assertEqual(Tweet.objects.count(), tweets_count + 1)
+
+    def test_retrieve(self):
+        # tweet should exist
+        url = TWEET_RETRIEVE_API.format(-1)
+        response = self.anonymous_client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+        # we will also get relevant comments when we retrieve a specific tweet
+        tweet = self.create_tweet(self.user1)
+        url = TWEET_RETRIEVE_API.format(tweet.id)
+        response = self.anonymous_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['comments']), 0)
+
+        self.create_comment(self.user1, tweet, 'wow1')
+        self.create_comment(self.user2, tweet, '!!!')
+        self.create_comment(self.user2, self.create_tweet(self.user2), 'another one')
+        response = self.anonymous_client.get(url)
+        self.assertEqual(len(response.data['comments']), 2)
