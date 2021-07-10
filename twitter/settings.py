@@ -9,8 +9,9 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
 from pathlib import Path
+
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -143,7 +144,31 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# configure the storage system for the files the users upload
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+TESTING = ((" ".join(sys.argv)).find('manage.py test') != -1)
+if TESTING:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# when using s3boto3 as the storage for user uploads, we need to set bucket name and region
+AWS_STORAGE_BUCKET_NAME = 'django-twitter-mini'
+AWS_S3_REGION_NAME = 'ap-southeast-2'
+
+
+# media/ is used to store the files uploaded by users
+# difference between static and media
+# - static is used for static code files, like css, js, code files that users can directly visit
+# - media stores the data files uploaded by users, not code
+MEDIA_ROOT = 'media/'
+
+
 try:
     from .local_settings import *
 except:
     pass
+
+
+
+
+# 当用s3boto3 作为用户上传文件存储时，需要按照你在 AWS 上创建的配置来设置你的 BUCKET_NAME
+# 和 REGION_NAME，这个值你可以改成你自己创建的 bucket 的名字和所在的 region

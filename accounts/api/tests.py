@@ -1,5 +1,6 @@
 from accounts.models import UserProfile
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
 from testing.testcases import TestCase
 
@@ -8,6 +9,7 @@ LOGIN_URL = '/api/accounts/login/'
 LOGOUT_URL = '/api/accounts/logout/'
 SIGNUP_URL = '/api/accounts/signup/'
 LOGIN_STATUS_URL = '/api/accounts/login_status/'
+USER_PROFILE_DETAIL_URL = '/api/profiles/{}/'
 
 
 class AccountApiTests(TestCase):
@@ -52,7 +54,7 @@ class AccountApiTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(response.data['user'], None)
-        self.assertEqual(response.data['user']['email'], 'admin@jiuzhang.com')
+        self.assertEqual(response.data['user']['id'], self.user.id)
 
         # validate we have logged in
         response = self.client.get(LOGIN_STATUS_URL)
@@ -125,4 +127,53 @@ class AccountApiTests(TestCase):
         response = self.client.get(LOGIN_STATUS_URL)
         self.assertEqual(response.data['has_logged_in'], True)
 
+
+class UserProfileAPITests(TestCase):
+
+    def test_update(self):
+        bob, bob_client = self.create_user_and_client('bob')
+        p = bob.profile
+        p.nickname = 'old bobby'
+        p.save()
+        url = USER_PROFILE_DETAIL_URL.format(p.id)
+
+        # anonymous user cannot update profile
+        response = self.anonymous_client.put(url, {
+            'nickname': 'new new new bob',
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data['detail'], 'Authentication credentials were not provided.')
+        p.refresh_from_db()
+        self.assertEqual(p.nickname, 'old bobby')
+
+        # test profile can only be updated by the owner
+        _, alex_client = self.create_user_and_client('alex')
+        response = alex_client.put(url, {
+            'nickname': 'the brand_new bob!!',
+        })
+        self.assertEqual(response.status_code, 403)
+        p.refresh_from_db()
+        self.assertEqual(p.nickname, 'old bobby')
+        self.assertEqual(response.data['detail'], 'You do not have permission to access this object')
+
+        # update nickname by the owner
+        response = bob_client.put(url, {
+            'nickname': 'happy bob',
+        })
+        self.assertEqual(response.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.nickname, 'happy bob')
+
+        # update avatar
+        response = bob_client.put(url, {
+            'avatar': SimpleUploadedFile(
+                name='bob-photo.jpg',
+                content=str.encode('a fake image'),
+                content_type='image/jpeg',
+            ),
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('bob-photo' in response.data['avatar'], True)
+        p.refresh_from_db
+        self.assertIsNotNone(p.avatar)
 
