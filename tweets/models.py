@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from likes.models import Like
+from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
 from utils.time_helpers import utc_now
 
 
@@ -28,6 +29,44 @@ class Tweet(models.Model):
             content_type=ContentType.objects.get_for_model(Tweet),
             object_id=self.id,
         ).order_by('-created_at')
+
+
+class TweetPhoto(models.Model):
+    # the photo is within which tweet
+    tweet = models.ForeignKey(Tweet, on_delete=models.SET_NULL, null=True)
+
+    # who uploaded this photo. Although we can check user through tweet field
+    # this accelerates the query of all the photos a user has uploaded
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+
+    # photo file
+    file = models.FileField()
+    order = models.IntegerField(default=0)
+
+    # status of the photo, used for auditing purposes
+    status = models.IntegerField(
+        default=TweetPhotoStatus.PENDING,
+        choices=TWEET_PHOTO_STATUS_CHOICES,
+    )
+
+    # soft delete, it is only marked as delete when user deletes it, will be actually deleted later
+    # real deleting takes sometime, so soft deleting helps improves performance, so we make it async
+    has_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        index_together = (
+            ('user', 'created_at'),
+            ('has_deleted', 'created_at'),
+            ('status', 'created_at'),
+            ('tweet', 'order'),
+        )
+
+    def __str__(self):
+        return f'{self.tweet.id}: {self.file}'
+
 
 
 
