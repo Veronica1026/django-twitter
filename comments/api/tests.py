@@ -155,7 +155,7 @@ class CommentApiTests(TestCase):
         self.create_comment(self.bob, tweet)
         response = self.alex_client.get(TWEET_LIST_API, {'user_id': self.bob.id})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['tweets'][0]['comments_count'], 1)
+        self.assertEqual(response.data['results'][0]['comments_count'], 1)
 
         # test newsfeeds list api
         self.create_comment(self.alex, tweet)
