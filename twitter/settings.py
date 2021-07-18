@@ -161,14 +161,28 @@ AWS_S3_REGION_NAME = 'ap-southeast-2'
 # - media stores the data files uploaded by users, not code
 MEDIA_ROOT = 'media/'
 
+##
+# https://docs.djangoproject.com/en/3.1/topics/cache/
+# use `pip install python-memcached`
+# DO NOT pip install memcache or django-memcached
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': 86400,
+    },
+    'testing': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': 86400,
+        'KEY_PREFIX': 'testing',
+    },
+}
+
+
+
 
 try:
     from .local_settings import *
 except:
     pass
-
-
-
-
-# 当用s3boto3 作为用户上传文件存储时，需要按照你在 AWS 上创建的配置来设置你的 BUCKET_NAME
-# 和 REGION_NAME，这个值你可以改成你自己创建的 bucket 的名字和所在的 region
