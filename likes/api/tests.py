@@ -212,8 +212,8 @@ class LikeApiTests(TestCase):
         # test tweet list api
         response = self.alex_client.get(TWEET_LIST_API, {'user_id': self.bob.id})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['tweets'][0]['has_liked'], True)
-        self.assertEqual(response.data['tweets'][0]['likes_count'], 1)
+        self.assertEqual(response.data['results'][0]['has_liked'], True)
+        self.assertEqual(response.data['results'][0]['likes_count'], 1)
 
         # test newsfeeds list api
         self.create_like(self.bob, tweet)
