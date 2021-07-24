@@ -6,7 +6,9 @@ from utils.time_helpers import utc_now
 
 
 class TweetsTests(TestCase):
+
     def setUp(self):
+        self.clear_cache()
         self.bob = self.create_user('bob')
         self.tweet = self.create_tweet(self.bob, content='bob is here for you')
 
