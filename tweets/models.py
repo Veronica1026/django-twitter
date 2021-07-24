@@ -2,9 +2,9 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from likes.models import Like
+from accounts.services import UserService
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
 from utils.time_helpers import utc_now
-
 
 class Tweet(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -66,6 +66,10 @@ class TweetPhoto(models.Model):
 
     def __str__(self):
         return f'{self.tweet.id}: {self.file}'
+
+    @property
+    def cached_user(self):
+        return UserService.get_user_through_cache(self.user_id)
 
 
 

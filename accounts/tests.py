@@ -3,6 +3,8 @@ from testing.testcases import TestCase
 
 
 class UserProfileTests(TestCase):
+    def setUp(self):
+        self.clear_cache()
 
     def test_profile_property(self):
         bob = self.create_user('bob')
