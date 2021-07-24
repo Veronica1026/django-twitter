@@ -22,7 +22,7 @@ def get_profile(user):
 
     if hasattr(user, '_cached_user_profile'):
         return getattr(user, '_cached_user_profile')
-    profile, _ = UserService.get_profile_through_cache()
+    profile = UserService.get_profile_through_cache(user.id)
     # use the attribute of user object to cache
     # to avoid multiple times of querying the same user profile (duplicate db query)
     setattr(user, 'cached_user_profile', profile)

@@ -30,6 +30,10 @@ class Tweet(models.Model):
             object_id=self.id,
         ).order_by('-created_at')
 
+    @property
+    def cached_user(self):
+        return UserService.get_user_through_cache(self.user_id)
+
 
 class TweetPhoto(models.Model):
     # the photo is within which tweet
@@ -67,9 +71,7 @@ class TweetPhoto(models.Model):
     def __str__(self):
         return f'{self.tweet.id}: {self.file}'
 
-    @property
-    def cached_user(self):
-        return UserService.get_user_through_cache(self.user_id)
+
 
 
 
