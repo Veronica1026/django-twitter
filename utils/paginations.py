@@ -1,3 +1,4 @@
+from dateutil import parser
 from rest_framework.pagination import BasePagination
 from rest_framework.response import Response
 
@@ -12,7 +13,35 @@ class EndlessPagination(BasePagination):
     def to_html(self):
         pass
 
+    def paginate_ordered_list(self, reverse_ordered_list, request):
+        if 'created_at__gt' in request.query_params:
+            created_at__gt = parser.isoparse(request.query_params['created_at__gt'])
+            objects = []
+            for obj in reverse_ordered_list:
+                if obj.created_at > created_at__gt:
+                    objects.append(obj)
+                else:
+                    break
+            self.has_next_page = False
+            return objects
+
+        index = 0;
+        if 'created_at__lt' in request.query_params:
+            created_at__lt = parser.isoparse(request.query_params['created_at__lt'])
+            for index, obj in enumerate(reverse_ordered_list):
+                if obj.created_at < created_at__lt:
+                    break
+            else:
+                # didn't find any satisfying objects, return empty array
+                # this else is corresponding with for, refer to the python grammar "for-else"
+                reverse_ordered_list = []
+        self.has_next_page = len(reverse_ordered_list) > index + self.page_size
+        return reverse_ordered_list[index: index + self.page_size]
+
     def paginate_queryset(self, queryset, request, view=None):
+        if type(queryset) == list:
+            return self.paginate_ordered_list(queryset, request)
+
         if 'created_at__gt' in request.query_params:
             # created_at__gt 用于下拉刷新时加载最新的内容进来
             # 为了简便起见，下拉刷新这里不做翻页机制，直接加载所有更新的数据
