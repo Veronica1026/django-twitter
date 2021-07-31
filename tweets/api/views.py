@@ -40,11 +40,14 @@ class TweetViewSet(viewsets.GenericViewSet):
             overload list method, we don't want to list all the tweets that all the users posts
             we use user_id as a filtering condition
         """
-        tweets = TweetService.get_cached_tweets(user_id=request.query_params['user_id'])
-
-        tweets = self.paginate_queryset(tweets)
+        user_id = request.query_params['user_id']
+        cached_tweets = TweetService.get_cached_tweets(user_id=user_id)
+        page = self.paginator.paginate_cached_list(cached_tweets, request)
+        if page is None:
+            queryset = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
+            page = self.paginate_queryset(queryset)
         serializer = TweetSerializer(
-            tweets,
+            page,
             context={'request': request},
             many=True,
         )

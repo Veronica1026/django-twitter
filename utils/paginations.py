@@ -1,7 +1,7 @@
 from dateutil import parser
 from rest_framework.pagination import BasePagination
 from rest_framework.response import Response
-
+from django.conf import settings
 
 class EndlessPagination(BasePagination):
     page_size = 20
@@ -39,8 +39,6 @@ class EndlessPagination(BasePagination):
         return reverse_ordered_list[index: index + self.page_size]
 
     def paginate_queryset(self, queryset, request, view=None):
-        if type(queryset) == list:
-            return self.paginate_ordered_list(queryset, request)
 
         if 'created_at__gt' in request.query_params:
             # created_at__gt 用于下拉刷新时加载最新的内容进来
@@ -62,6 +60,21 @@ class EndlessPagination(BasePagination):
         queryset = queryset.order_by('-created_at')[:self.page_size + 1]
         self.has_next_page = len(queryset) > self.page_size
         return queryset[:self.page_size]
+
+    def paginate_cached_list(self, cached_list, request):
+        paginated_list = self.paginate_ordered_list(cached_list, request)
+        # if scroll down, paginate_list contains all the latest data, we do nothing and return it directly
+        if 'created_at__gt' in request.query_params:
+            return paginated_list
+        # if we have next page, it means we have more data inside cached_list, also return them
+        if self.has_next_page:
+            return paginated_list
+        # if cached_list is not long enough to hit the length limit, it means all the data is cached
+        if (len(cached_list) < settings.REDIS_LIST_LENGTH_LIMIT):
+            return paginated_list
+        # if we enter here, it means, there might be data that is inside db, but not inside cache.
+        # we need to query them in db
+        return None
 
     def get_paginated_response(self, data):
         return Response({
