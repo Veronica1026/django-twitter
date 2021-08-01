@@ -1,19 +1,25 @@
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import post_save, pre_delete
 from likes.models import Like
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
-from utils.memcached_helper import MemcachedHelper
 from tweets.listeners import push_tweet_to_cache
-from utils.time_helpers import utc_now
-from django.db.models.signals import post_save, pre_delete
 from utils.listeners import invalidate_object_cache
-
+from utils.memcached_helper import MemcachedHelper
+from utils.time_helpers import utc_now
 
 class Tweet(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     content = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    # for newly added field, we must set null=True,
+    # otherwise default=0 will loop through all the table and set the value
+    # which will slow down the whole process of migration,
+    # locking the table, so users cannot create new tweets at this time
+    # however we can write a script to back fill the value for those old data after the migration is done
+    likes_count = models.IntegerField(default=0, null=True)
+    comments_count = models.IntegerField(default=0, null=True)
 
     class Meta:
         index_together = (('user', 'created_at'),)
