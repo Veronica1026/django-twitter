@@ -140,3 +140,4 @@ dmypy.json
 
 /.pycharm_helpers/
 .idea
+hbase-startup.txt
