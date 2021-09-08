@@ -6,7 +6,7 @@ from notifications.models import Notification
 class NotificationServiceTest(TestCase):
 
     def setUp(self):
-        self.clear_cache()
+        super(NotificationServiceTest, self).setUp()
         self.bob = self.create_user('bob')
         self.alex = self.create_user('alex')
         self.bob_tweet = self.create_tweet(self.bob)

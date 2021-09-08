@@ -1,5 +1,4 @@
 from django.conf import settings
-from friendships.models import Friendship
 from newsfeeds.models import NewsFeed
 from newsfeeds.services import NewsFeedService
 from rest_framework.test import APIClient
@@ -15,7 +14,7 @@ FOLLOW_URL = '/api/friendships/{}/follow/'
 class NewsFeedApiTests(TestCase):
 
     def setUp(self):
-        self.clear_cache()
+        super(NewsFeedApiTests, self).setUp()
         self.bob = self.create_user('bob')
         self.bob_client = APIClient()
         self.bob_client.force_authenticate(self.bob)

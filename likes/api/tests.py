@@ -11,7 +11,7 @@ TWEET_LIST_API = '/api/tweets/'
 
 class LikeApiTests(TestCase):
     def setUp(self):
-        self.clear_cache()
+        super(LikeApiTests, self).setUp()
         self.bob, self.bob_client = self.create_user_and_client('bob')
         self.alex, self.alex_client = self.create_user_and_client('alex')
 

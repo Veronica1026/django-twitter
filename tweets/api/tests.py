@@ -10,10 +10,11 @@ TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
 TWEET_RETRIEVE_API = '/api/tweets/{}/'
 
+
 class TweetApiTests(TestCase):
 
     def setUp(self):
-        self.clear_cache()
+        super(TweetApiTests, self).setUp()
         self.user1 = self.create_user('user1', 'user1@twitter.com')
         self.tweets1 = [
             self.create_tweet(self.user1)
