@@ -1,6 +1,5 @@
 from django_hbase.models import BadRowKeyError, EmptyColumnError
-from friendships.hbase_models import HBaseFollower, HBaseFollowing
-from friendships.models import Friendship
+from friendships.models import HBaseFollowing, HBaseFollower
 from friendships.services import FriendshipService
 from testing.testcases import TestCase
 
